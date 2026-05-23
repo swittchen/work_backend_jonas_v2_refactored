@@ -13,13 +13,13 @@ package org.sergei.backendJonasv2.application.pipeline;
 public interface PipelineStage {
 
     /**
-     * Eindeutiger Name der Pahse  -  wird fürs Logging benutzt.
+     * Eindeutiger Name der Phase - wird fürs Logging benutzt.
      */
 
     String getName();
 
     /**
-     * Führt die Pahse aus.
+     * Führt die Phase aus.
      *
      * @param context geteilter Pipeline-Zustand
      */

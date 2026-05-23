@@ -38,7 +38,7 @@ public class Pipeline {
                 log.info("Phase fertig: {} ({} ms)", stage.getName(), duration);
 
             } catch (Exception e) {
-                log.error("Pahse fehlgeschlagen: {} ", stage.getName(), e);
+                log.error("Phase fehlgeschlagen: {} ", stage.getName(), e);
                 return PipelineResult.failure(
                         context,
                         stage.getName(),

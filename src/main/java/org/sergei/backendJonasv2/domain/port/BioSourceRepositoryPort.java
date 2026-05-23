@@ -14,5 +14,5 @@ public interface BioSourceRepositoryPort {
 
     Optional<BioSource> findByEid(String eid);
 
-    List<BioSource> saveAll(List<BioSource> nioSources);
+    List<BioSource> saveAll(List<BioSource> bioSources);
 }

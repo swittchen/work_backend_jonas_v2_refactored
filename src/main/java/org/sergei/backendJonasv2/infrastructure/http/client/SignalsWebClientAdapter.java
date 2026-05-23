@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sergei.backendJonasv2.domain.model.BioSource;
 import org.sergei.backendJonasv2.domain.port.BioSourceRemoteClientPort;
+import org.sergei.backendJonasv2.infrastructure.http.PagedResponse;
 import org.sergei.backendJonasv2.infrastructure.http.mapper.SignalsResponseMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,10 +15,9 @@ import tools.jackson.databind.JsonNode;
 import java.util.List;
 
 /**
- * Adapter - implementiert den Domian-Port mit WebClient.
+ * Adapter - implementiert den Domain-Port mit WebClient.
  * Hier passiert nur HTTP - KEINE Geschäftslogik.
  */
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -28,12 +28,6 @@ public class SignalsWebClientAdapter implements BioSourceRemoteClientPort {
 
     private final WebClient signalsWebClient;
     private final SignalsResponseMapper responseMapper;
-
-    private record PagedResponse(
-            List<BioSource> items,
-            int offset,
-            boolean hasMore) {
-    }
 
     private Mono<PagedResponse> fetchPage(int offset) {
         return signalsWebClient.get()
@@ -58,7 +52,6 @@ public class SignalsWebClientAdapter implements BioSourceRemoteClientPort {
 
     @Override
     public Flux<BioSource> fetchAllChildren() {
-        //Reaktive Pagination - holt alle Seiten nacheinander
         return fetchPage(0)
                 .expand(response -> {
                     int currentOffset = response.offset() + PAGE_SIZE;
@@ -73,14 +66,12 @@ public class SignalsWebClientAdapter implements BioSourceRemoteClientPort {
     @Override
     public Flux<BioSource> fetchDetailsByEids(List<String> eids) {
         return Flux.fromIterable(eids)
-                .flatMap(this::fetchSingleBioSource, 5); //parallel mit limit 5
+                .flatMap(this::fetchSingleBioSource, 5);
     }
 
     @Override
     public Mono<String> createBioSource(BioSource bioSource) {
-        // Payload_building wird in einem separaten Mapper ausgelagert
         String payload = responseMapper.toCreateRequestPayload(bioSource);
-
         return signalsWebClient.post()
                 .uri("/materials/Bio%20Sources/assets")
                 .header("Content-Type", "application/vnd.api+json")
@@ -89,6 +80,4 @@ public class SignalsWebClientAdapter implements BioSourceRemoteClientPort {
                 .bodyToMono(String.class)
                 .doOnError(e -> log.error("Fehler beim Erstellen der BioSource: {}", e.getMessage()));
     }
-
-
 }
